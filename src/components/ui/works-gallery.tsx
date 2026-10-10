@@ -35,7 +35,14 @@ function ProjectCard({
           src={project.image}
           alt={project.title}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-106 group-focus-visible:scale-106 select-none"
+          decoding="async"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          srcSet={
+            project.image.includes("unsplash.com")
+              ? `${project.image.replace(/w=\d+/, "w=450")} 450w, ${project.image.replace(/w=\d+/, "w=900")} 900w`
+              : undefined
+          }
+          className="w-full h-full object-cover transition-transform duration-500 ease-out md:group-hover:scale-106 select-none"
         />
         {/* Subtle hover overlay */}
         <div className="absolute inset-0 bg-neutral-900/5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -108,11 +115,13 @@ function ScrollColumn({
   direction = "up",
   duration = 20,
   prefersReducedMotion = false,
+  isActive = true,
 }: {
   projects: GalleryProject[]
   direction?: "up" | "down"
   duration?: number
   prefersReducedMotion?: boolean
+  isActive?: boolean
 }) {
   // Ensure enough items so that each track is taller than the column viewport
   const displayProjects = useMemo(() => {
@@ -128,14 +137,14 @@ function ScrollColumn({
     <div className="h-full overflow-hidden relative">
       <motion.div
         animate={
-          prefersReducedMotion
+          prefersReducedMotion || !isActive
             ? { y: 0 }
             : {
                 y: direction === "up" ? ["0%", "-50%"] : ["-50%", "0%"],
               }
         }
         transition={
-          prefersReducedMotion
+          prefersReducedMotion || !isActive
             ? { duration: 0 }
             : {
                 duration: duration,
@@ -144,7 +153,7 @@ function ScrollColumn({
                 repeatType: "loop",
               }
         }
-        className="will-change-transform"
+        className={isActive ? "will-change-transform" : ""}
       >
         {/* Track 1: Original Items */}
         <div className="flex flex-col gap-6 pb-6">
@@ -188,6 +197,27 @@ export default function WorksGallery({
   className = "",
 }: WorksGalleryProps) {
   const prefersReducedMotion = useReducedMotion() ?? false
+  const sectionRef = React.useRef<HTMLElement>(null)
+  const [isInView, setIsInView] = React.useState(false)
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener("resize", checkMobile, { passive: true })
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting)
+      },
+      { rootMargin: "150px 0px" }
+    )
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", checkMobile)
+    }
+  }, [])
 
   // Partition projects cleanly among the three columns
   const col1Projects = useMemo(
@@ -205,6 +235,7 @@ export default function WorksGallery({
 
   return (
     <section
+      ref={sectionRef}
       id="works"
       className={`relative w-full overflow-hidden bg-white text-neutral-800 py-24 sm:py-32 border-t border-neutral-200 ${className}`}
     >
@@ -230,17 +261,20 @@ export default function WorksGallery({
 
         {/* 
           Infinite Scrolling Vertical Columns Viewport
-          Subtle vertical gradient mask at top and bottom so cards gracefully fade in and out.
-          No scrollbars; overflow is hidden.
+          Subtle vertical gradient mask on desktop; simplified on mobile for maximum fps.
         */}
         <div
           className="relative w-full h-[640px] sm:h-[720px] lg:h-[780px] overflow-hidden"
-          style={{
-            maskImage:
-              "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-          }}
+          style={
+            isMobile
+              ? undefined
+              : {
+                  maskImage:
+                    "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+                }
+          }
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 h-full">
             {/* Column 1: Moves upward (Always visible: Mobile, Tablet, Desktop) */}
@@ -250,6 +284,7 @@ export default function WorksGallery({
                 direction="up"
                 duration={speedCol1}
                 prefersReducedMotion={prefersReducedMotion}
+                isActive={isInView}
               />
             </div>
 
@@ -260,6 +295,7 @@ export default function WorksGallery({
                 direction="down"
                 duration={speedCol2}
                 prefersReducedMotion={prefersReducedMotion}
+                isActive={isInView}
               />
             </div>
 
@@ -270,6 +306,7 @@ export default function WorksGallery({
                 direction="up"
                 duration={speedCol3}
                 prefersReducedMotion={prefersReducedMotion}
+                isActive={isInView}
               />
             </div>
           </div>

@@ -231,8 +231,8 @@ export default function FloatingCardGallery({
         perspective: isTouchDevice ? "none" : "1600px",
       }}
     >
-      {/* Ambient background particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Ambient background particles (hidden on mobile to eliminate compositor overhead) */}
+      <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((p) => (
           <div
             key={p.id}
@@ -353,7 +353,14 @@ export default function FloatingCardGallery({
                     src={card.image}
                     alt={card.title}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+                    decoding="async"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    srcSet={
+                      card.image.includes("unsplash.com")
+                        ? `${card.image.replace(/w=\d+/, "w=400")} 400w, ${card.image.replace(/w=\d+/, "w=800")} 800w`
+                        : undefined
+                    }
+                    className="w-full h-full object-cover transition-transform duration-500 ease-out md:group-hover:scale-108"
                     style={{
                       transform: isTouchDevice ? "none" : "translateZ(20px)",
                     }}
@@ -363,7 +370,7 @@ export default function FloatingCardGallery({
 
                   {/* Top Category Badge */}
                   <div
-                    className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/90 backdrop-blur-md border border-neutral-200/90 text-[11px] font-medium text-neutral-800 shadow-sm"
+                    className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white md:bg-white/90 md:backdrop-blur-md border border-neutral-200/90 text-[11px] font-medium text-neutral-800 shadow-xs md:shadow-sm"
                     style={{ transform: isTouchDevice ? "none" : "translateZ(30px)" }}
                   >
                     {card.icon}
@@ -372,7 +379,7 @@ export default function FloatingCardGallery({
 
                   {/* Tap to expand hint on mobile */}
                   <div
-                    className="absolute bottom-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-[10px] text-white/90 group-hover:text-white transition-colors"
+                    className="absolute bottom-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-900/80 md:bg-black/60 md:backdrop-blur-sm text-[10px] text-white/90 group-hover:text-white transition-colors"
                     style={{ transform: isTouchDevice ? "none" : "translateZ(30px)" }}
                   >
                     <span>Read Details</span>
@@ -409,6 +416,8 @@ export default function FloatingCardGallery({
                         <img
                           src={card.avatar}
                           alt={card.author || "Author"}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -435,7 +444,7 @@ export default function FloatingCardGallery({
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
-                    className="absolute inset-0 bg-white/98 backdrop-blur-xl rounded-2xl p-6 sm:p-7 z-50 flex flex-col justify-between border border-neutral-200 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] overflow-y-auto text-neutral-800"
+                    className="absolute inset-0 bg-white md:bg-white/98 md:backdrop-blur-xl rounded-2xl p-6 sm:p-7 z-50 flex flex-col justify-between border border-neutral-200 shadow-lg md:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] overflow-y-auto text-neutral-800"
                     initial={{ opacity: 0, scale: 0.94 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.94 }}

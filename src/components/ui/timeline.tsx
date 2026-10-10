@@ -256,12 +256,12 @@ export default function Timeline({
 
   useGSAP(() => {
     const section = sectionRef.current;
-
     if (!section) return;
 
     const items = allJourneyItems;
+    const isMobile = window.innerWidth < 768;
 
-    if (reducedMotion) {
+    if (reducedMotion || isMobile) {
       items.forEach((item) => {
         gsap.set(`.jl-${item.id}`, { scaleY: 1 });
         gsap.set(`.jd-${item.id}`, { scale: 1 });
@@ -412,6 +412,7 @@ export default function Timeline({
       <div className="h-screen w-screen sticky top-[0%] pt-[10%] overflow-hidden max-[600px]:top-[5%]">
         <div
           ref={wholeSliderRef}
+          style={{ willChange: "transform" }}
           className="mr-[2vw] flex h-[30vw] w-[240vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[80vh] max-[600px]:w-[800vw] max-[600px]:px-[7vw]"
         >
           <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[5vw]">
@@ -419,6 +420,14 @@ export default function Timeline({
               src={imageUrl}
               alt={imageAlt}
               draggable={false}
+              loading="lazy"
+              decoding="async"
+              sizes="(max-width: 600px) 85vw, 30vw"
+              srcSet={
+                imageUrl.includes("unsplash.com")
+                  ? `${imageUrl.replace(/w=\d+/, "w=600")} 600w, ${imageUrl.replace(/w=\d+/, "w=1200")} 1200w`
+                  : undefined
+              }
               className="h-full w-full object-cover"
             />
           </div>

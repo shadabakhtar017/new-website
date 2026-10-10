@@ -756,7 +756,7 @@ export default function LycorisSpecimen({
       const sr = stage.getBoundingClientRect()
       W = Math.max(1, sr.width)
       H = Math.max(1, sr.height)
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      dpr = Math.min(window.devicePixelRatio || 1, W < 768 ? 1.5 : 2)
       const cw = Math.round(W * dpr)
       const ch = Math.round(H * dpr)
       if (canvas.width !== cw || canvas.height !== ch) {
@@ -972,7 +972,7 @@ export default function LycorisSpecimen({
           const o = coord < 1 ? 1 : 1 - smoothstep(0.1, 0.45, out)
           c.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px)"
           c.style.opacity = String(o)
-          c.style.filter = still || out < 0.05 ? "" : "blur(" + (out * 14).toFixed(1) + "px)"
+          c.style.filter = still || W < 768 || out < 0.05 ? "" : "blur(" + (out * 14).toFixed(1) + "px)"
         } else {
           const dx = (W / 2 - n0.x) * m * 0.75
           const dy = (cy1 - n0.y) * m
@@ -981,7 +981,7 @@ export default function LycorisSpecimen({
             ? ""
             : "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px) scale(" + (1 - m * 0.7).toFixed(3) + ")"
           c.style.opacity = String(o)
-          c.style.filter = still || m < 0.02 ? "" : "blur(" + (m * 12).toFixed(1) + "px)"
+          c.style.filter = still || W < 768 || m < 0.02 ? "" : "blur(" + (m * 12).toFixed(1) + "px)"
         }
         c.style.visibility = coord > 1.6 ? "hidden" : ""
       })

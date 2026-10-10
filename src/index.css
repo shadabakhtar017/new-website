@@ -60,3 +60,28 @@
     padding: 0;
   }
 }
+
+/* Mobile Performance Optimizations */
+@media (max-width: 768px) {
+  /* Eliminate heavy backdrop-filter compositing overhead on mobile viewports */
+  .backdrop-blur-xl,
+  .backdrop-blur-lg,
+  .backdrop-blur-md,
+  .backdrop-blur-sm {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Simplify multi-stage layered box-shadows on mobile */
+  .shadow-2xl,
+  .shadow-xl,
+  .shadow-lg {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Smooth touch scrolling on mobile containers */
+  html,
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+}

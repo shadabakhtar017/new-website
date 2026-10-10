@@ -291,8 +291,18 @@ export function GlobeWireframe({
       return;
     }
 
-    const rotate = () => {
-      setRotation((prev) => [(prev[0] + autoRotateSpeed) % 360, prev[1]]);
+    let lastTime = 0;
+    const isMobileViewport = typeof window !== "undefined" && window.innerWidth < 768;
+    const minInterval = isMobileViewport ? 45 : 0;
+
+    const rotate = (time: number) => {
+      if (minInterval > 0 && time - lastTime < minInterval) {
+        animationFrame.current = requestAnimationFrame(rotate);
+        return;
+      }
+      lastTime = time;
+      const speed = isMobileViewport ? autoRotateSpeed * 2.8 : autoRotateSpeed;
+      setRotation((prev) => [(prev[0] + speed) % 360, prev[1]]);
       animationFrame.current = requestAnimationFrame(rotate);
     };
 

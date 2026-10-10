@@ -68,16 +68,9 @@ function LinkedinIcon({ className }: { className?: string }) {
   )
 }
 
-export default function FooterSection() {
-  const [copied, setCopied] = useState(false)
-  const [emailInput, setEmailInput] = useState("")
-  const [subscribed, setSubscribed] = useState(false)
+const ClinicClock = React.memo(function ClinicClock() {
   const [currentTime, setCurrentTime] = useState("")
 
-  const contactEmail = "hello@aureliadentalstudio.com"
-  const contactPhone = "+91 98765 43210"
-
-  // Live real-time clinic clock
   useEffect(() => {
     const updateTime = () => {
       const now = new Date()
@@ -94,6 +87,26 @@ export default function FooterSection() {
     const timer = setInterval(updateTime, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  return (
+    <div className="inline-flex items-center gap-3 px-3.5 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-xs font-mono text-neutral-700">
+      <Globe className="w-3.5 h-3.5 text-[#ff5f00]" />
+      <span>CLINIC CLOCK:</span>
+      <span className="text-neutral-900 font-semibold">
+        {currentTime || "09:00 AM"}
+      </span>
+      <span className="text-neutral-500">• Chandigarh (IST)</span>
+    </div>
+  )
+})
+
+export default function FooterSection() {
+  const [copied, setCopied] = useState(false)
+  const [emailInput, setEmailInput] = useState("")
+  const [subscribed, setSubscribed] = useState(false)
+
+  const contactEmail = "hello@aureliadentalstudio.com"
+  const contactPhone = "+91 98765 43210"
 
   const copyToClipboard = async () => {
     try {
@@ -250,15 +263,8 @@ export default function FooterSection() {
               </div>
             </div>
 
-            {/* Real-time Studio Clock & Timezone Widget */}
-            <div className="inline-flex items-center gap-3 px-3.5 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-xs font-mono text-neutral-700">
-              <Globe className="w-3.5 h-3.5 text-[#ff5f00]" />
-              <span>CLINIC CLOCK:</span>
-              <span className="text-neutral-900 font-semibold">
-                {currentTime || "09:00 AM"}
-              </span>
-              <span className="text-neutral-500">• Chandigarh (IST)</span>
-            </div>
+            {/* Real-time Studio Clock & Timezone Widget (Isolated client component) */}
+            <ClinicClock />
           </div>
 
           {/* Column 2: Navigation Links (2 Cols) */}

@@ -77,31 +77,70 @@ export default function SelectedWorkGallery({
   }, [])
 
   useEffect(() => {
+    let isVisible = false
+
     const updateProgress = () => {
+      if (!isVisible) {
+        rafIdRef.current = null
+        return
+      }
+
       currentProgressRef.current = lerp(
         currentProgressRef.current,
         targetProgressRef.current,
-        0.12
+        isMobile ? 0.22 : 0.12
       )
 
-      // Snap when close enough
+      // Snap when close enough and stop RAF to free main thread
       if (Math.abs(currentProgressRef.current - targetProgressRef.current) < 0.0005) {
         currentProgressRef.current = targetProgressRef.current
+        setScrollProgress(currentProgressRef.current)
+        rafIdRef.current = null
+        return
       }
 
       setScrollProgress(currentProgressRef.current)
       rafIdRef.current = requestAnimationFrame(updateProgress)
     }
 
-    rafIdRef.current = requestAnimationFrame(updateProgress)
-    window.addEventListener("scroll", handleScroll, { passive: true })
+    const startRafIfNeeded = () => {
+      if (isVisible && !rafIdRef.current) {
+        rafIdRef.current = requestAnimationFrame(updateProgress)
+      }
+    }
+
+    const onScroll = () => {
+      handleScroll()
+      startRafIfNeeded()
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting
+        if (isVisible) {
+          handleScroll()
+          startRafIfNeeded()
+        } else if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current)
+          rafIdRef.current = null
+        }
+      },
+      { rootMargin: "150px 0px" }
+    )
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
     handleScroll()
 
     return () => {
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
-      window.removeEventListener("scroll", handleScroll)
+      observer.disconnect()
+      window.removeEventListener("scroll", onScroll)
     }
-  }, [handleScroll])
+  }, [handleScroll, isMobile])
 
   // Subtle mouse tilt parallax on desktop
   const handleMouseMove = useCallback(
@@ -239,7 +278,7 @@ export default function SelectedWorkGallery({
         <div
           className={`absolute z-30 pointer-events-auto transition-all duration-500 ${
             isMobile
-              ? "left-6 right-6 bottom-8 max-w-none text-left bg-white/95 p-5 rounded-2xl border border-neutral-200 backdrop-blur-lg shadow-xl"
+              ? "left-4 right-4 sm:left-6 sm:right-6 bottom-6 sm:bottom-8 max-w-none text-left bg-white p-4 sm:p-5 rounded-2xl border border-neutral-200 md:bg-white/95 md:backdrop-blur-lg shadow-md md:shadow-xl"
               : "left-8 sm:left-14 lg:left-24 top-1/2 -translate-y-1/2 max-w-sm sm:max-w-md lg:max-w-lg"
           }`}
           style={{
@@ -428,7 +467,7 @@ export default function SelectedWorkGallery({
                   opacity: finalOpacity,
                   zIndex: zIndexVal,
                   transformStyle: "preserve-3d",
-                  willChange: "transform, opacity",
+                  willChange: isActive ? "transform, opacity" : "auto",
                   transition: "transform 0.08s ease-out, opacity 0.08s ease-out",
                 }}
               >
@@ -436,7 +475,14 @@ export default function SelectedWorkGallery({
                 <img
                   src={project.image}
                   alt={project.title}
-                  loading={index < 4 ? "eager" : "lazy"}
+                  loading={index < 2 ? "eager" : "lazy"}
+                  decoding="async"
+                  sizes="(max-width: 640px) 240px, 380px"
+                  srcSet={
+                    project.image.includes("unsplash.com")
+                      ? `${project.image.replace(/w=\d+/, "w=400")} 400w, ${project.image.replace(/w=\d+/, "w=800")} 800w`
+                      : undefined
+                  }
                   className="w-full h-full object-cover transition-transform duration-700 ease-out"
                   style={{
                     transform: isHovered && isActive ? "scale(1.05)" : "scale(1)",
