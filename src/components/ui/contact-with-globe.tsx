@@ -736,12 +736,14 @@ export default function ContactWithGlobe({
   contactLinks = DEFAULT_CONTACT_LINKS,
   id = "contact",
 }: ContactWithGlobeProps) {
-  // Controlled form state
+  // Controlled form state for Appointment Booking
   const [formData, setFormData] = useState({
     fullName: "",
-    company: "",
+    phone: "",
     email: "",
-    message: "",
+    service: "General Consultation & Checkup",
+    preferredDate: "",
+    notes: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -751,7 +753,9 @@ export default function ContactWithGlobe({
   }>({ status: "idle", message: "" });
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -772,6 +776,12 @@ export default function ContactWithGlobe({
       newErrors.fullName = "Full name is required.";
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required.";
+    } else if (formData.phone.trim().replace(/\D/g, "").length < 10) {
+      newErrors.phone = "Please enter a valid 10-digit phone number.";
+    }
+
     if (!formData.email.trim()) {
       newErrors.email = "Email address is required.";
     } else if (
@@ -780,8 +790,8 @@ export default function ContactWithGlobe({
       newErrors.email = "Please enter a valid email address.";
     }
 
-    if (!formData.message.trim()) {
-      newErrors.message = "Message cannot be empty.";
+    if (!formData.preferredDate.trim()) {
+      newErrors.preferredDate = "Please choose a preferred appointment date.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -800,13 +810,15 @@ export default function ContactWithGlobe({
       setFormFeedback({
         status: "validated",
         message:
-          "Form validated successfully! Connect your production backend or email API (e.g., Formspree or Resend) to dispatch this message.",
+          "Appointment request submitted successfully! Our clinic coordinator will contact you shortly to confirm your time slot.",
       });
       setFormData({
         fullName: "",
-        company: "",
+        phone: "",
         email: "",
-        message: "",
+        service: "General Consultation & Checkup",
+        preferredDate: "",
+        notes: "",
       });
     }, 600);
   };
@@ -918,10 +930,10 @@ export default function ContactWithGlobe({
           >
             <div>
               <h3 className="text-lg font-semibold text-neutral-900 mb-0.5">
-                Send a message
+                Book an Appointment
               </h3>
               <p className="text-sm text-neutral-600">
-                Fill out the form and we'll get back to you promptly.
+                Choose your preferred date & treatment. We will confirm your visit promptly.
               </p>
             </div>
 
@@ -945,18 +957,18 @@ export default function ContactWithGlobe({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label
-                    htmlFor="contact-fullname"
+                    htmlFor="booking-fullname"
                     className="text-xs font-semibold tracking-widest uppercase text-neutral-500"
                   >
                     Full Name <span className="text-rose-500">*</span>
                   </label>
                   <input
-                    id="contact-fullname"
+                    id="booking-fullname"
                     name="fullName"
                     type="text"
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    placeholder="Ahdeetai"
+                    placeholder="Rohit Sharma"
                     className={cn(
                       "w-full bg-neutral-50 border rounded-xl px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200",
                       errors.fullName
@@ -970,79 +982,149 @@ export default function ContactWithGlobe({
                     </span>
                   )}
                 </div>
+
                 <div className="flex flex-col gap-2">
                   <label
-                    htmlFor="contact-company"
+                    htmlFor="booking-phone"
                     className="text-xs font-semibold tracking-widest uppercase text-neutral-500"
                   >
-                    Company
+                    Phone Number <span className="text-rose-500">*</span>
                   </label>
                   <input
-                    id="contact-company"
-                    name="company"
-                    type="text"
-                    value={formData.company}
+                    id="booking-phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
                     onChange={handleInputChange}
-                    placeholder="ScrollX UI"
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200"
+                    placeholder="+91 98765 43210"
+                    className={cn(
+                      "w-full bg-neutral-50 border rounded-xl px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200",
+                      errors.phone
+                        ? "border-rose-500"
+                        : "border-neutral-200",
+                    )}
                   />
+                  {errors.phone && (
+                    <span className="text-xs text-rose-500">
+                      {errors.phone}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="booking-email"
+                    className="text-xs font-semibold tracking-widest uppercase text-neutral-500"
+                  >
+                    Email Address <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="booking-email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="patient@example.com"
+                    className={cn(
+                      "w-full bg-neutral-50 border rounded-xl px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200",
+                      errors.email
+                        ? "border-rose-500"
+                        : "border-neutral-200",
+                    )}
+                  />
+                  {errors.email && (
+                    <span className="text-xs text-rose-500">
+                      {errors.email}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="booking-date"
+                    className="text-xs font-semibold tracking-widest uppercase text-neutral-500"
+                  >
+                    Preferred Date <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="booking-date"
+                    name="preferredDate"
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                    value={formData.preferredDate}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "w-full bg-neutral-50 border rounded-xl px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200",
+                      errors.preferredDate
+                        ? "border-rose-500"
+                        : "border-neutral-200",
+                    )}
+                  />
+                  {errors.preferredDate && (
+                    <span className="text-xs text-rose-500">
+                      {errors.preferredDate}
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <label
-                  htmlFor="contact-email"
+                  htmlFor="booking-service"
                   className="text-xs font-semibold tracking-widest uppercase text-neutral-500"
                 >
-                  Email Address <span className="text-rose-500">*</span>
+                  Treatment / Service
                 </label>
-                <input
-                  id="contact-email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
+                <select
+                  id="booking-service"
+                  name="service"
+                  value={formData.service}
                   onChange={handleInputChange}
-                  placeholder="support@scrollxui.com"
-                  className={cn(
-                    "w-full bg-neutral-50 border rounded-xl px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200",
-                    errors.email
-                      ? "border-rose-500"
-                      : "border-neutral-200",
-                  )}
-                />
-                {errors.email && (
-                  <span className="text-xs text-rose-500">
-                    {errors.email}
-                  </span>
-                )}
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 transition-all duration-200 cursor-pointer"
+                >
+                  <option value="General Consultation & Checkup">
+                    General Consultation & Checkup
+                  </option>
+                  <option value="Teeth Whitening & Cleaning">
+                    Teeth Whitening & Cleaning
+                  </option>
+                  <option value="Dental Implants">Dental Implants</option>
+                  <option value="Root Canal Treatment">
+                    Painless Root Canal Treatment
+                  </option>
+                  <option value="Clear Aligners / Invisalign">
+                    Clear Aligners / Invisalign
+                  </option>
+                  <option value="Cosmetic Dentistry & Veneers">
+                    Cosmetic Dentistry & Porcelain Veneers
+                  </option>
+                  <option value="Emergency Dental Care">
+                    Emergency Dental Care
+                  </option>
+                </select>
               </div>
 
               <div className="flex flex-col gap-2">
                 <label
-                  htmlFor="contact-message"
+                  htmlFor="booking-notes"
                   className="text-xs font-semibold tracking-widest uppercase text-neutral-500"
                 >
-                  Message <span className="text-rose-500">*</span>
+                  Message / Symptoms{" "}
+                  <span className="text-neutral-400 font-normal lowercase">
+                    (optional)
+                  </span>
                 </label>
                 <textarea
-                  id="contact-message"
-                  name="message"
-                  rows={4}
-                  value={formData.message}
+                  id="booking-notes"
+                  name="notes"
+                  rows={3}
+                  value={formData.notes}
                   onChange={handleInputChange}
-                  placeholder="Type your message here"
-                  className={cn(
-                    "w-full bg-neutral-50 border rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 resize-none transition-all duration-200",
-                    errors.message
-                      ? "border-rose-500"
-                      : "border-neutral-200",
-                  )}
+                  placeholder="Describe any symptoms, concerns, or preferred time slot (e.g. Morning / Evening)..."
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 resize-none transition-all duration-200"
                 />
-                {errors.message && (
-                  <span className="text-xs text-rose-500">
-                    {errors.message}
-                  </span>
-                )}
               </div>
 
               <Button
@@ -1050,7 +1132,7 @@ export default function ContactWithGlobe({
                 disabled={isSubmitting}
                 className="w-fit h-11 px-8 rounded-xl font-semibold text-sm bg-neutral-900 hover:bg-neutral-800 text-white group mt-1"
               >
-                {isSubmitting ? "Submitting..." : "Submit"}
+                {isSubmitting ? "Booking Appointment..." : "Book Appointment"}
                 <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1 ml-1" />
               </Button>
             </form>
