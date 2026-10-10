@@ -3,7 +3,7 @@ import Demo from "./demo"
 import FloatingCardGallery from "@/components/ui/floating-card-gallery"
 import SelectedWorkGallery from "@/components/ui/selected-work-gallery"
 import TimelineDemo from "@/components/ui/demo"
-import WorksGallery from "@/components/ui/works-gallery"
+import TestimonialsSection from "@/components/ui/testimonials-section"
 import ContactWithGlobe from "@/components/ui/contact-with-globe"
 import FooterSection from "@/components/ui/footer-section"
 
@@ -34,8 +34,8 @@ export default function App() {
         />
       </section>
 
-      {/* Premium Infinite Vertical Column Gallery / My Works Section */}
-      <WorksGallery />
+      {/* Patient Reviews & Testimonials Section */}
+      <TestimonialsSection />
 
       {/* Interactive Contact Section with D3 Wireframe Globe & Accessible Form */}
       <ContactWithGlobe />
